@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Forja — entrenamiento</title>
+<meta name="description" content="Forja — tu app de entrenamiento: rutinas, registro de series, peso, nutrición, sueño, pasos y export semanal.">
+<meta name="theme-color" content="#14100C">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Forja">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="loading" id="loading"><span class="flame">🔥</span>Cargando Forja…</div>
+
+<div class="stage"><div class="device"><div class="app">
+
+  <!-- HOY -->
+  <section class="screen is-active" id="s-hoy">
+    <div class="top">
+      <div class="brand"><span class="flame">🔥</span><div><div class="kick">Forja</div><h1>Hoy</h1></div></div>
+      <div style="display:flex;align-items:center;gap:11px"><div class="datechip" id="hoy-date"></div><button class="avatar" id="open-perfil"><span id="avatar-ini">F</span></button></div>
+    </div>
+    <div class="week" id="weekstrip"></div>
+    <div class="scroll">
+      <div id="install-hint"></div>
+      <div class="grid">
+        <div class="card tap wide" data-edit="peso">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div class="lbl">⚖️ Peso en ayunas</div><span class="trend dn" id="peso-trend"></span></div>
+          <div class="big" id="peso-val">—</div>
+          <canvas class="spark" id="spark-peso"></canvas>
+        </div>
+        <div class="card tap wide" data-edit="nutri">
+          <div class="lbl">🍽️ Nutrición</div>
+          <div class="kcalrow"><div class="kv" id="kcal-val">—</div><div class="kt" id="kcal-goal">objetivo 2 300</div></div>
+          <div class="bar"><i id="kcal-bar" style="width:0%"></i></div>
+          <div class="macros" id="macros"></div>
+        </div>
+        <div class="card tap" data-edit="sueno"><div class="lbl">😴 Sueño</div><div class="big" id="sueno-val">—</div><div class="sub" id="sueno-sub">Sin registrar</div></div>
+        <div class="card tap" data-edit="pasos"><div class="lbl">👟 Pasos</div><div class="big" id="pasos-val">—</div><div class="sub" id="pasos-goal">objetivo 10 000</div></div>
+      </div>
+      <div class="section-h"><h2>Entreno de hoy</h2><span class="link" data-goto="entreno">Ver →</span></div>
+      <button class="ex-row" style="margin-top:10px" data-goto="entreno">
+        <div class="ex-thumb">🏋️</div>
+        <div class="ex-meta"><div class="n" id="hoy-rt-name">—</div><div class="d"><span class="g" id="hoy-rt-sub">—</span></div></div>
+        <div class="ex-info" style="color:var(--ember-2);background:rgba(255,122,26,.12)">▶</div>
+      </button>
+    </div>
+  </section>
+
+  <!-- ENTRENO -->
+  <section class="screen" id="s-entreno">
+    <div id="wk-overview" style="display:flex;flex-direction:column;min-height:0;flex:1">
+      <div class="top"><div><div class="kick">Rutina de hoy</div><h1>Entreno</h1></div></div>
+      <div class="scroll">
+        <div class="hero-workout">
+          <div class="tag" id="hero-tag">—</div><h2 id="hero-name">—</h2><p id="hero-sub">—</p>
+          <div class="hero-stats"><div class="s"><b id="hero-nex">0</b><span>ejercicios</span></div><div class="s"><b id="hero-nseries">0</b><span>series</span></div><div class="s"><b id="hero-min">~0</b><span>min</span></div></div>
+          <button class="btn btn-primary" id="start-wk">Empezar entreno</button>
+        </div>
+        <div class="section-h"><h2>Ejercicios</h2><span class="link" id="open-biblio-1">+ Añadir</span></div>
+        <div class="ex-list" id="ov-list"></div>
+        <div class="two" style="margin-top:14px"><button class="btn btn-ghost" id="open-biblio-2">🔍 Biblioteca</button><button class="btn btn-ghost" id="open-import">⬇️ Importar</button></div>
+        <div class="section-h"><h2>Mis rutinas</h2><span class="link" id="new-routine">+ Nueva</span></div>
+        <div class="ex-list" id="mis-rutinas"></div>
+      </div>
+    </div>
+    <div id="wk-active" style="display:none;flex-direction:column;min-height:0;flex:1">
+      <div class="aw-top"><button class="iconbtn" id="wk-back">‹</button><div class="t"><div class="k">En curso</div><div class="n" id="aw-name">—</div></div><div class="clock" id="wk-clock">00:00</div></div>
+      <div class="prog"><i id="wk-prog" style="width:0%"></i></div>
+      <div class="scroll" id="wk-scroll"></div>
+    </div>
+  </section>
+
+  <!-- PROGRESO -->
+  <section class="screen" id="s-progreso">
+    <div class="top"><div><div class="kick">Tendencias</div><h1>Progreso</h1></div></div>
+    <div class="scroll">
+      <div class="chartcard"><div class="ch-h"><div class="n">Peso corporal</div><div class="v" id="wt-head">peso en ayunas</div></div><canvas id="ch-weight" height="150"></canvas><div id="wt-empty"></div></div>
+      <div class="chartcard"><div class="ch-h"><div class="n">Volumen semanal</div><div class="v">series por grupo</div></div><canvas id="ch-vol" height="150"></canvas><div id="vol-empty"></div>
+        <div class="legend"><div class="li"><span class="sw" style="background:var(--ember)"></span>Empuje</div><div class="li"><span class="sw" style="background:var(--gold)"></span>Tirón</div><div class="li"><span class="sw" style="background:var(--teal)"></span>Pierna</div></div></div>
+      <div class="section-h"><h2>Evolución del físico</h2><label class="link" for="foto-input" style="cursor:pointer">+ Añadir foto</label></div>
+      <input type="file" id="foto-input" accept="image/*" style="display:none">
+      <div class="fotos-grid" id="fotos-grid"></div>
+      <div class="section-h"><h2>Récords recientes</h2></div>
+      <div id="pr-list"></div>
+    </div>
+  </section>
+
+  <!-- EXPORTAR -->
+  <section class="screen" id="s-exportar">
+    <div class="top"><div><div class="kick">Cierre de semana</div><h1>Exportar</h1></div></div>
+    <div class="scroll">
+      <div class="exp-hero"><div class="tag" id="exp-week">Esta semana</div><h2>Tu informe semanal</h2>
+        <p>Recoge TODO lo de la semana: entrenos, cargas, nutrición, peso, sueño, pasos, tu perfil y fotos. Lo exportas y me lo pegas en el chat para ajustar.</p>
+        <div class="kpis" id="exp-kpis"></div>
+        <div style="height:14px"></div><button class="btn btn-primary" id="do-export">Generar informe de la semana</button></div>
+      <div class="section-h"><h2>Vista previa</h2><span class="link" id="copy-export">Copiar</span></div>
+      <div class="preview" id="export-preview"></div>
+
+      <div class="section-h"><h2>Compartir una rutina</h2></div>
+      <p class="subnote">Genera el código de tu rutina actual para pasárselo a tu entrenador o a tu pareja; lo pegan en <b style="color:var(--chalk)">Importar</b>.</p>
+      <button class="btn btn-ghost" id="gen-routine" style="margin-top:12px">Generar código de mi rutina</button>
+      <div class="preview" id="routine-code" style="display:none;margin-top:10px"></div>
+      <button class="btn btn-ghost" id="copy-routine" style="display:none;margin-top:10px">Copiar código</button>
+
+      <div class="section-h"><h2>Copia de seguridad</h2></div>
+      <p class="subnote">Guarda o restaura TODOS tus datos (rutinas, registros, peso, nutrición, sueño, pasos, perfil y fotos). Útil al cambiar de móvil.</p>
+      <div class="two" style="margin-top:12px"><button class="btn btn-ghost" id="backup-export">⬆️ Exportar copia</button><label class="btn btn-ghost" for="backup-file" style="cursor:pointer">⬇️ Importar copia</label></div>
+      <input type="file" id="backup-file" accept="application/json,.json" style="display:none">
+    </div>
+  </section>
+
+  <!-- BIBLIOTECA overlay -->
+  <div class="biblio" id="biblio">
+    <div class="bhead">
+      <div class="brow"><button class="iconbtn" id="biblio-close">‹</button><div class="n"><div class="k">Biblioteca</div><h2 id="biblio-title">Ejercicios</h2></div></div>
+      <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input id="biblio-search" placeholder="Buscar ejercicio…" autocomplete="off"></div>
+    </div>
+    <div class="chipsrow" id="biblio-chips"></div>
+    <div class="bcount" id="biblio-count"></div>
+    <div class="blist" id="biblio-list"></div>
+  </div>
+
+  <div class="restbar" id="restbar">
+    <div class="rt-ring"><svg viewBox="0 0 46 46" style="transform:rotate(-90deg)"><circle cx="23" cy="23" r="19" fill="none" stroke="var(--surface-3)" stroke-width="4"/><circle id="rt-arc" cx="23" cy="23" r="19" fill="none" stroke="var(--ember)" stroke-width="4" stroke-linecap="round" stroke-dasharray="119.4" stroke-dashoffset="0"/></svg><b id="rt-num">90</b></div>
+    <div class="rt-m"><div class="k">Descanso</div><div class="n" id="rt-next"></div></div>
+    <button class="rt-btn" id="rt-minus">−15</button><button class="rt-btn" id="rt-plus">+15</button><button class="rt-skip" id="rt-skip">Saltar</button>
+  </div>
+
+  <nav class="tabbar">
+    <button class="tab active" data-tab="hoy"><svg class="ic" viewBox="0 0 24 24"><path d="M3 10.5 12 4l9 6.5"/><path d="M5 9.5V20h14V9.5"/></svg>Hoy</button>
+    <button class="tab" data-tab="entreno"><svg class="ic" viewBox="0 0 24 24"><path d="M6.5 6.5v11M17.5 6.5v11M4 9v6M20 9v6M6.5 12h11"/></svg>Entreno</button>
+    <button class="tab" data-tab="progreso"><svg class="ic" viewBox="0 0 24 24"><path d="M4 19V5M4 15l4-4 4 3 8-8"/><path d="M20 6v4h-4"/></svg>Progreso</button>
+    <button class="tab" data-tab="exportar"><svg class="ic" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4"/><path d="M5 15v4h14v-4"/></svg>Exportar</button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+  <div class="sheet-root" id="sheetRoot"><div class="backdrop" id="backdrop"></div><div class="sheet" id="sheet"></div></div>
+
+</div></div></div>
+
+<script src="app.js"></script>
+</body>
+</html>

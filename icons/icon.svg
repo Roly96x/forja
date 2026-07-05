@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="bg" cx="0.5" cy="0.32" r="0.85">
+      <stop offset="0" stop-color="#271a0e"/>
+      <stop offset="1" stop-color="#14100C"/>
+    </radialGradient>
+    <linearGradient id="flame" x1="256" y1="70" x2="256" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFC04A"/>
+      <stop offset="0.5" stop-color="#FF7A1A"/>
+      <stop offset="1" stop-color="#E7560A"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="114" fill="url(#bg)"/>
+  <path fill="url(#flame)" d="M256 80 C 322 162 362 202 362 282 C 362 344 314 392 256 392 C 198 392 150 344 150 282 C 150 244 167 214 192 194 C 187 232 206 253 229 259 C 202 214 214 150 256 80 Z"/>
+  <path fill="#FFE0A0" opacity="0.92" d="M256 214 C 286 250 302 268 302 300 C 302 327 279 348 256 348 C 233 348 213 328 213 302 C 213 282 225 264 244 253 C 244 271 254 281 265 283 C 253 262 250 238 256 214 Z"/>
+</svg>
