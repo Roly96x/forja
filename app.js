@@ -1,5 +1,6 @@
 /* ===== Forja · app.js ===== */
 "use strict";
+const APP_VERSION = 'v4';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const nf = n => (n === '' || n == null || isNaN(n)) ? '—' : Number(n).toLocaleString('es-ES');
@@ -184,6 +185,7 @@ function renderHoy() {
   $("#pasos-val").textContent = d.pasos != null ? nf(d.pasos) : '—';
   $("#pasos-goal").textContent = 'objetivo ' + nf(ajustes.pasosGoal);
   $("#avatar-ini").textContent = (perfil.nombre || 'F').charAt(0).toUpperCase();
+  { const av = $("#app-ver"); if (av) av.textContent = 'Forja ' + APP_VERSION + ' · funciona sin conexión'; }
   updateHero();
 }
 function weightSeries() { return Object.values(dias).filter(x => x.peso != null).sort((a, b) => a.fecha < b.fecha ? -1 : 1).map(x => ({ f: x.fecha, v: x.peso })).slice(-21); }
@@ -652,12 +654,17 @@ function wireStatic() {
   $("#backup-export").onclick = backupExport;
   $("#backup-file").addEventListener("change", e => { backupImport(e.target.files && e.target.files[0]); e.target.value = ''; });
   window.addEventListener("resize", () => { if (cur === "progreso") drawCharts(); });
-  // teclado móvil: sube la hoja por encima del teclado (fija --kb con el viewport visual)
+  // teclado móvil: sube la hoja por encima del teclado. Referencia = mayor altura vista del viewport visual (estable en iOS).
   if (window.visualViewport) {
-    const onVV = () => { const vv = window.visualViewport; const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)); document.documentElement.style.setProperty('--kb', (kb > 80 ? kb : 0) + 'px'); };
+    let fullVH = window.visualViewport.height || 0;
+    const onVV = () => { const vv = window.visualViewport; if (vv.height > fullVH) fullVH = vv.height; const kb = Math.max(0, Math.round(fullVH - vv.height)); document.documentElement.style.setProperty('--kb', (kb > 80 ? kb : 0) + 'px'); };
     window.visualViewport.addEventListener('resize', onVV);
     window.visualViewport.addEventListener('scroll', onVV);
   }
-  sheetEl().addEventListener('focusin', e => { setTimeout(() => { try { e.target.scrollIntoView({ block: 'center' }); } catch (_) {} }, 160); });
+  // red de seguridad: al enfocar un campo, si el teclado no se detectó, sube la hoja igualmente
+  sheetEl().addEventListener('focusin', e => {
+    const t = e.target; if (!t || !/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+    setTimeout(() => { const kb = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--kb')) || 0; if (kb < 80) document.documentElement.style.setProperty('--kb', '44vh'); try { t.scrollIntoView({ block: 'center' }); } catch (_) {} }, 320);
+  });
 }
 function selectText(el) { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
