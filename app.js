@@ -142,6 +142,7 @@ const screens = { hoy: "#s-hoy", entreno: "#s-entreno", progreso: "#s-progreso",
 let cur = "hoy";
 function go(tab) {
   cur = tab;
+  hideRest();
   $$(".screen").forEach(s => s.classList.remove("is-active"));
   $(screens[tab]).classList.add("is-active");
   $$(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === tab));
@@ -219,7 +220,7 @@ function renderOverview() {
   updateHero();
 }
 function renderMisRutinas() {
-  $("#mis-rutinas").innerHTML = rutinas.map(r => `<button class="ex-row ${r.id === activeRoutineId ? '' : ''}" data-rutina="${r.id}"><div class="ex-thumb">${r.id === activeRoutineId ? '🔥' : (exOf(r.ex[0] ? r.ex[0].id : '').ic)}</div><div class="ex-meta"><div class="n">${r.name}${r.id === activeRoutineId ? ' · activa' : ''}</div><div class="d">${r.sub || r.tag} · ${r.ex.length} ejercicios</div></div><div class="ex-info">▶</div></button>`).join("");
+  $("#mis-rutinas").innerHTML = rutinas.map(r => `<div class="ex-row" data-rutina="${r.id}"><div class="ex-thumb">${r.id === activeRoutineId ? '🔥' : (exOf(r.ex[0] ? r.ex[0].id : '').ic)}</div><div class="ex-meta"><div class="n">${r.name}${r.id === activeRoutineId ? ' · activa' : ''}</div><div class="d">${r.sub || r.tag} · ${r.ex.length} ejercicios</div></div><button class="rowmenu" data-rtmenu="${r.id}" aria-label="Opciones">⋯</button></div>`).join("");
 }
 async function setActiveRoutine(id) { activeRoutineId = id; await saveKV('activeRoutineId', id); renderOverview(); renderMisRutinas(); $("#s-entreno .scroll").scrollTop = 0; toast(`Rutina activa: <b>${activeRoutine().name}</b>`); }
 
@@ -273,8 +274,8 @@ function hideRest() { $("#restbar").classList.remove("show"); clearInterval(rest
 const sheetRoot = () => $("#sheetRoot"), sheetEl = () => $("#sheet");
 let animT = null;
 function stopAnim() { if (animT) { clearInterval(animT); animT = null; } }
-function openSheet(html) { stopAnim(); sheetEl().innerHTML = '<div class="grab"></div>' + html; sheetRoot().classList.add("open"); }
-function closeSheet() { sheetRoot().classList.remove("open"); stopAnim(); }
+function openSheet(html) { stopAnim(); sheetEl().scrollTop = 0; sheetEl().innerHTML = '<button class="sheet-close" id="sheet-close" aria-label="Cerrar">✕</button><div class="grab"></div>' + html; sheetRoot().classList.add("open"); const c = $("#sheet-close"); if (c) c.onclick = closeSheet; }
+function closeSheet() { sheetRoot().classList.remove("open"); stopAnim(); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); document.documentElement.style.setProperty('--kb', '0px'); }
 
 function openSetSheet(ei, si) {
   const S = session.ex[ei].sets[si], L = exOf(session.ex[ei].id), d = Object.assign({}, S);
@@ -334,16 +335,23 @@ function openDetail(id) {
     <div class="chips"><span class="pill grp">${e.g}</span>${e.me ? `<span class="pill">${e.me}</span>` : ''}${e.eq ? `<span class="pill">${e.eq}</span>` : ''}${e.lv ? `<span class="pill">${e.lv}</span>` : ''}</div>
     <div class="musc"><b>Músculos:</b> ${e.m || '—'}</div>${guiaHtml}
     <a class="videolink" href="${yt}" target="_blank" rel="noopener">▶︎ Ver vídeo en YouTube</a>
-    <div class="detail-actions"><button class="btn ${inRoutine ? 'btn-ghost' : 'btn-primary'}" id="add-rt">${inRoutine ? '✓ Ya en la rutina' : '＋ Añadir a la rutina'}</button></div></div>`);
+    <div class="detail-actions"><button class="btn ${inRoutine ? 'btn-ghost' : 'btn-primary'}" id="add-rt">${inRoutine ? '✕ Quitar de la rutina' : '＋ Añadir a la rutina'}</button></div></div>`);
   if (im) {
+    const pre = new Image(); pre.src = im[1]; // precarga el 2º fotograma para que la animación sea fluida
     let fr = 0; const imgEl = $("#anim-img"), frEl = $("#anim-fr"), pb = $("#anim-play");
-    pb.onclick = () => { if (animT) { stopAnim(); pb.textContent = "▶ Ver movimiento"; imgEl.src = im[0]; frEl.textContent = "Inicio"; return; } pb.textContent = "⏸ Pausar"; animT = setInterval(() => { fr = fr ? 0 : 1; imgEl.src = im[fr]; frEl.textContent = fr ? "Final" : "Inicio"; }, 650); };
+    pb.onclick = () => { if (animT) { stopAnim(); pb.textContent = "▶ Ver movimiento"; imgEl.src = im[0]; frEl.textContent = "Inicio"; return; } pb.textContent = "⏸ Pausar"; animT = setInterval(() => { fr = fr ? 0 : 1; imgEl.src = im[fr]; frEl.textContent = fr ? "Final" : "Inicio"; }, 700); };
   }
   $("#add-rt").onclick = async () => {
-    const R = activeRoutine(); if (R.ex.some(x => x.id === id)) { toast('Ya está en la rutina'); return; }
-    R.ex.push({ id, rest: (e.me === 'Compuesto' ? 270 : 150), target: [[0, 10], [0, 10], [0, 10]] }); await saveRoutine(R);
-    renderOverview(); if (session && session.routineId === R.id) { session.ex.push({ id, rest: (e.me === 'Compuesto' ? 270 : 150), last: lastFor(id), sets: [0, 1, 2].map(() => ({ peso: 0, reps: 10, rir: 2, done: false, drop: false })) }); saveLive(); renderSession(); }
-    closeSheet(); toast(`<b>${e.n}</b> añadido a ${R.name}`);
+    const R = activeRoutine(); const idx = R.ex.findIndex(x => x.id === id);
+    if (idx >= 0) {
+      R.ex.splice(idx, 1); await saveRoutine(R);
+      if (session && session.routineId === R.id) { const si = session.ex.findIndex(x => x.id === id); if (si >= 0) { session.ex.splice(si, 1); saveLive(); renderSession(); } }
+      renderOverview(); closeSheet(); toast(`Quitado de ${R.name}`);
+    } else {
+      R.ex.push({ id, rest: (e.me === 'Compuesto' ? 270 : 150), target: [[0, 10], [0, 10], [0, 10]] }); await saveRoutine(R);
+      if (session && session.routineId === R.id) { session.ex.push({ id, rest: (e.me === 'Compuesto' ? 270 : 150), last: lastFor(id), sets: [0, 1, 2].map(() => ({ peso: 0, reps: 10, rir: 2, done: false, drop: false })) }); saveLive(); renderSession(); }
+      renderOverview(); closeSheet(); toast(`<b>${e.n}</b> añadido a ${R.name}`);
+    }
   };
 }
 
@@ -533,6 +541,22 @@ function newRoutine() {
   openSheet(`<h3>Nueva rutina</h3><p class="sub">Ponle nombre y luego añade ejercicios desde la biblioteca.</p><div class="field"><label>Nombre</label><input id="nr-name" placeholder="Ej. Empuje B"></div><button class="btn btn-primary" id="nr-go">Crear</button>`);
   $("#nr-go").onclick = async () => { const name = $("#nr-name").value.trim() || 'Nueva rutina'; const nr = { id: uid(), name, tag: 'Personalizada', sub: '', ex: [] }; rutinas.unshift(nr); await saveRoutine(nr); await setActiveRoutine(nr.id); closeSheet(); toast(`<b>${name}</b> creada`); };
 }
+function openRoutineMenu(id) {
+  const r = rutinas.find(x => x.id === id); if (!r) return;
+  openSheet(`<h3>Rutina</h3><p class="sub">${r.ex.length} ejercicios${r.id === activeRoutineId ? ' · activa' : ''}</p>
+    <div class="field"><label>Nombre</label><input id="rn-name" value="${(r.name || '').replace(/"/g, '&quot;')}"></div>
+    <button class="btn btn-primary" id="rn-save">Guardar nombre</button>
+    <div class="finishrow"><button class="btn btn-ghost" id="rn-activate">Poner como activa</button></div>
+    <button class="link dangerlink" id="rn-del" style="display:block;margin:16px auto 2px;background:none;font-size:14px">Eliminar rutina</button>`);
+  $("#rn-save").onclick = async () => { const nm = $("#rn-name").value.trim(); if (!nm) { toast('Ponle un nombre'); return; } r.name = nm; await saveRoutine(r); renderMisRutinas(); if (r.id === activeRoutineId) updateHero(); closeSheet(); toast('Nombre guardado ✓'); };
+  $("#rn-activate").onclick = () => { closeSheet(); setActiveRoutine(id); };
+  $("#rn-del").onclick = () => {
+    if (rutinas.length <= 1) { toast('Debe quedar al menos una rutina'); return; }
+    openSheet(`<h3>¿Eliminar «${r.name}»?</h3><p class="sub">No se puede deshacer.</p><button class="btn btn-primary" id="del-yes" style="background:linear-gradient(180deg,#e2643f,#b64327);color:#fff">Sí, eliminar</button><button class="link" id="del-no" style="display:block;margin:14px auto 2px;background:none;font-size:14px;color:var(--muted)">Cancelar</button>`);
+    $("#del-no").onclick = closeSheet;
+    $("#del-yes").onclick = async () => { rutinas = rutinas.filter(x => x.id !== id); await idbDel('rutinas', id); if (activeRoutineId === id) { activeRoutineId = rutinas[0].id; await saveKV('activeRoutineId', activeRoutineId); } renderOverview(); renderMisRutinas(); closeSheet(); toast('Rutina eliminada'); };
+  };
+}
 
 /* ----- copia de seguridad ----- */
 async function backupExport() {
@@ -589,7 +613,7 @@ function wireStatic() {
   $("#open-import").addEventListener("click", openImport);
   $("#new-routine").addEventListener("click", newRoutine);
   $("#start-wk").addEventListener("click", startWorkout);
-  $("#wk-back").addEventListener("click", () => { $("#wk-active").style.display = "none"; $("#wk-overview").style.display = "flex"; updateHero(); });
+  $("#wk-back").addEventListener("click", () => { hideRest(); $("#wk-active").style.display = "none"; $("#wk-overview").style.display = "flex"; updateHero(); });
   $("#backdrop").addEventListener("click", closeSheet);
   $("#rt-minus").onclick = () => { restLeft = Math.max(1, restLeft - 15); restTotal = Math.max(restTotal, restLeft); updRest(); };
   $("#rt-plus").onclick = () => { restLeft += 15; restTotal = Math.max(restTotal, restLeft); updRest(); };
@@ -610,7 +634,7 @@ function wireStatic() {
   });
   // overview: exercise detail + mis rutinas
   $("#ov-list").addEventListener("click", e => { const b = e.target.closest("[data-detail]"); if (b) openDetail(b.dataset.detail); });
-  $("#mis-rutinas").addEventListener("click", e => { const b = e.target.closest("[data-rutina]"); if (b) setActiveRoutine(b.dataset.rutina); });
+  $("#mis-rutinas").addEventListener("click", e => { const m = e.target.closest("[data-rtmenu]"); if (m) { openRoutineMenu(m.dataset.rtmenu); return; } const b = e.target.closest("[data-rutina]"); if (b) setActiveRoutine(b.dataset.rutina); });
   // fotos
   $("#foto-input").addEventListener("change", e => { handleFoto(e.target.files && e.target.files[0]); e.target.value = ''; });
   $("#fotos-grid").addEventListener("click", e => { const b = e.target.closest("[data-foto]"); if (b) openFoto(+b.dataset.foto); });
@@ -622,5 +646,12 @@ function wireStatic() {
   $("#backup-export").onclick = backupExport;
   $("#backup-file").addEventListener("change", e => { backupImport(e.target.files && e.target.files[0]); e.target.value = ''; });
   window.addEventListener("resize", () => { if (cur === "progreso") drawCharts(); });
+  // teclado móvil: sube la hoja por encima del teclado (fija --kb con el viewport visual)
+  if (window.visualViewport) {
+    const onVV = () => { const vv = window.visualViewport; const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)); document.documentElement.style.setProperty('--kb', (kb > 80 ? kb : 0) + 'px'); };
+    window.visualViewport.addEventListener('resize', onVV);
+    window.visualViewport.addEventListener('scroll', onVV);
+  }
+  sheetEl().addEventListener('focusin', e => { setTimeout(() => { try { e.target.scrollIntoView({ block: 'center' }); } catch (_) {} }, 160); });
 }
 function selectText(el) { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }

@@ -146,7 +146,7 @@
   .setadd button{flex:1;font-size:12.5px;font-weight:700;color:var(--muted);padding:10px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line-soft)}
   .setadd button:active{background:var(--surface-3)}
 
-  .restbar{position:absolute;left:12px;right:12px;bottom:calc(var(--tab-h) + 10px);background:linear-gradient(180deg,#2b1c0e,#1d140c);
+  .restbar{position:absolute;left:12px;right:12px;bottom:calc(var(--tab-h) + env(safe-area-inset-bottom) + 10px);background:linear-gradient(180deg,#2b1c0e,#1d140c);
     border:1px solid var(--ember);border-radius:16px;padding:12px 14px;display:flex;align-items:center;gap:13px;
     box-shadow:0 16px 40px -12px rgba(0,0,0,.7),0 0 40px -12px rgba(255,122,26,.5);
     transform:translateY(140%);transition:transform .34s cubic-bezier(.2,.9,.3,1.2);z-index:40}
@@ -192,10 +192,14 @@
   .sheet-root{position:absolute;inset:0;z-index:60;pointer-events:none}
   .backdrop{position:absolute;inset:0;background:rgba(6,4,2,.6);opacity:0;transition:opacity .3s}
   .sheet-root.open .backdrop{opacity:1;pointer-events:auto}
-  .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--surface);border-radius:26px 26px 0 0;border-top:1px solid var(--line);
+  .sheet{position:absolute;left:0;right:0;bottom:var(--kb, 0px);background:var(--surface);border-radius:26px 26px 0 0;border-top:1px solid var(--line);
     padding:10px var(--sp) calc(22px + env(safe-area-inset-bottom));transform:translateY(100%);
-    transition:transform .34s cubic-bezier(.2,.9,.3,1);max-height:92%;overflow-y:auto}
+    transition:transform .34s cubic-bezier(.2,.9,.3,1);max-height:calc(92% - var(--kb, 0px));overflow-y:auto}
   .sheet-root.open .sheet{transform:none}
+  .sheet-close{position:absolute;top:12px;right:14px;width:32px;height:32px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);color:var(--muted);font-size:14px;font-weight:800;display:grid;place-items:center;z-index:3;line-height:1}
+  .sheet-close:active{background:var(--surface-3)}
+  .rowmenu{width:34px;height:34px;border-radius:9px;flex:none;display:grid;place-items:center;color:var(--muted);background:var(--surface-2);border:1px solid var(--line-soft);font-size:18px;font-weight:800;line-height:1}
+  .rowmenu:active{background:var(--surface-3)}
   .grab{width:38px;height:4px;border-radius:4px;background:var(--line);margin:4px auto 14px}
   .sheet h3{margin:0 0 3px;font-size:20px;font-weight:800;letter-spacing:-.01em}
   .sheet .sub{color:var(--muted);font-size:13px;font-weight:600;margin:0 0 16px}
