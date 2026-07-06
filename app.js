@@ -587,7 +587,13 @@ function backupImport(file) {
 }
 
 /* ===== PWA ===== */
-function registerSW() { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW', e)); }
+function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW', e));
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (refreshing || !hadController) return; refreshing = true; location.reload(); });
+}
 let deferredPrompt = null;
 function initInstall() {
   const box = $("#install-hint");
