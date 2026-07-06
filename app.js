@@ -1,6 +1,6 @@
 /* ===== Forja · app.js ===== */
 "use strict";
-const APP_VERSION = 'v4';
+const APP_VERSION = 'v5';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const nf = n => (n === '' || n == null || isNaN(n)) ? '—' : Number(n).toLocaleString('es-ES');
