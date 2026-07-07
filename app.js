@@ -1,6 +1,6 @@
 /* ===== Forja · app.js ===== */
 "use strict";
-const APP_VERSION = 'v6';
+const APP_VERSION = 'v7';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const nf = n => (n === '' || n == null || isNaN(n)) ? '—' : Number(n).toLocaleString('es-ES');
@@ -330,7 +330,8 @@ function openDetail(id) {
   if (g && g.tipo === 'pro') guiaHtml = `<div class="gsec-h">Ejecución</div><ol class="steps">${g.ej.map(s => `<li>${s}</li>`).join("")}</ol><div class="note err"><span class="ni">⚠︎</span><div><b>Error común.</b> ${g.er}</div></div><div class="note tip"><span class="ni">✦</span><div><b>Consejo.</b> ${g.co}</div></div>`;
   else if (g && g.p && g.p.length) guiaHtml = `<div class="gsec-h">Cómo se hace</div><ol class="steps">${g.p.map(s => `<li>${s}</li>`).join("")}</ol>`;
   else guiaHtml = `<div class="musc" style="margin-top:14px">Sigue la animación de inicio a final.</div>`;
-  const yt = `https://www.youtube.com/results?search_query=${encodeURIComponent(e.n + ' técnica ejercicio')}`;
+  const ytq = e.n.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim(); // quita paréntesis descriptivos para una búsqueda más robusta
+  const yt = `https://www.youtube.com/results?search_query=${encodeURIComponent((ytq || e.n) + ' técnica ejercicio')}`;
   const inRoutine = activeRoutine().ex.some(x => x.id === id);
   openSheet(`<div class="guide">${media}
     <div class="gtop" style="margin-top:14px"><div><div class="g">${e.g}</div><div class="n">${e.n}</div></div></div>
