@@ -1,6 +1,6 @@
 /* ===== Forja · app.js ===== */
 "use strict";
-const APP_VERSION = 'v5';
+const APP_VERSION = 'v6';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const nf = n => (n === '' || n == null || isNaN(n)) ? '—' : Number(n).toLocaleString('es-ES');
@@ -33,7 +33,7 @@ async function loadCatalog() {
   CAT.premium = raw.filter(x => x.guide && x.guide.tipo === 'pro').length;
 }
 const exOf = id => CAT.EXMAP[id] || { id, n: id, g: 'Otro', ic: '🏋️', m: '', eq: '', lv: '', me: '' };
-const imgOf = id => { const x = CAT.byId[id]; return x ? [x.img0, x.img1] : null; };
+const imgOf = id => { const x = CAT.byId[id]; return x && x.img0 ? [x.img0, x.img1] : null; };
 const guideOf = id => { const x = CAT.byId[id]; return x ? x.guide : null; };
 function thumb(id) { const im = imgOf(id), ic = exOf(id).ic; return im ? `<img class="ex-photo" src="${im[0]}" loading="lazy" decoding="async" alt="" onerror="imgFallback(this,'${ic}')">` : `<div class="ex-thumb">${ic}</div>`; }
 
@@ -325,7 +325,7 @@ async function saveDaily(kind) {
 /* ----- ficha de ejercicio ----- */
 function openDetail(id) {
   const e = exOf(id), im = imgOf(id), g = guideOf(id);
-  const media = im ? `<div class="anim" id="anim"><span class="fr" id="anim-fr">Inicio</span><img id="anim-img" src="${im[0]}" alt="${e.n}" onerror="this.style.opacity=0"><button class="playbtn" id="anim-play">▶ Ver movimiento</button></div>` : `<div class="anim"><div class="noimg"><span class="bg">${e.ic}</span>Sin imagen</div></div>`;
+  const media = im ? `<div class="anim" id="anim"><span class="fr" id="anim-fr">Inicio</span><img id="anim-img" src="${im[0]}" alt="${e.n}" onerror="this.style.opacity=0"><button class="playbtn" id="anim-play">▶ Ver movimiento</button></div>` : `<div class="anim"><div class="noimg"><span class="bg">${e.ic}</span><span class="noimg-t">${e.g}</span><span class="noimg-s">Mira la técnica en el vídeo ↓</span></div></div>`;
   let guiaHtml = '';
   if (g && g.tipo === 'pro') guiaHtml = `<div class="gsec-h">Ejecución</div><ol class="steps">${g.ej.map(s => `<li>${s}</li>`).join("")}</ol><div class="note err"><span class="ni">⚠︎</span><div><b>Error común.</b> ${g.er}</div></div><div class="note tip"><span class="ni">✦</span><div><b>Consejo.</b> ${g.co}</div></div>`;
   else if (g && g.p && g.p.length) guiaHtml = `<div class="gsec-h">Cómo se hace</div><ol class="steps">${g.p.map(s => `<li>${s}</li>`).join("")}</ol>`;

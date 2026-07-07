@@ -1,5 +1,5 @@
 /* Forja · service worker */
-const CACHE = 'forja-shell-v5';
+const CACHE = 'forja-shell-v6';
 const IMGCACHE = 'forja-img-v1';
 const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'catalog.json', 'manifest.webmanifest', 'icons/icon.svg'];
 
