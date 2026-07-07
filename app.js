@@ -1,6 +1,6 @@
 /* ===== Forja · app.js ===== */
 "use strict";
-const APP_VERSION = 'v7';
+const APP_VERSION = 'v8';
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const nf = n => (n === '' || n == null || isNaN(n)) ? '—' : Number(n).toLocaleString('es-ES');
@@ -331,7 +331,7 @@ function openDetail(id) {
   else if (g && g.p && g.p.length) guiaHtml = `<div class="gsec-h">Cómo se hace</div><ol class="steps">${g.p.map(s => `<li>${s}</li>`).join("")}</ol>`;
   else guiaHtml = `<div class="musc" style="margin-top:14px">Sigue la animación de inicio a final.</div>`;
   const ytq = e.n.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim(); // quita paréntesis descriptivos para una búsqueda más robusta
-  const yt = `https://www.youtube.com/results?search_query=${encodeURIComponent((ytq || e.n) + ' técnica ejercicio')}`;
+  const yt = `https://www.youtube.com/results?search_query=${encodeURIComponent((ytq || e.n) + ' ejercicio')}`;
   const inRoutine = activeRoutine().ex.some(x => x.id === id);
   openSheet(`<div class="guide">${media}
     <div class="gtop" style="margin-top:14px"><div><div class="g">${e.g}</div><div class="n">${e.n}</div></div></div>
